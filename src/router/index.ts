@@ -6,7 +6,7 @@ import { constantRoutes } from '@/router/config';
 Vue.use(VueRouter);
 
 const router = new VueRouter({
-  routes: constantRoutes,
+  routes: constantRoutes
 });
 
 export default router;

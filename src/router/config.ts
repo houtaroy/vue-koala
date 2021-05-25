@@ -7,16 +7,16 @@ export const asyncRoutes = [
       {
         name: 'Home',
         component: (): any => import('@/views/Home.vue'),
-        meta: { title: 'home', permission: ['home'] },
+        meta: { title: 'home', permission: ['home'] }
       },
       {
         path: '/about',
         name: 'About',
         component: (): any => import('@/views/About.vue'),
-        meta: { title: 'home', permission: ['about'] },
-      },
-    ],
-  },
+        meta: { title: 'home', permission: ['about'] }
+      }
+    ]
+  }
 ];
 
 export const constantRoutes = [];
