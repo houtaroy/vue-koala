@@ -1,8 +1,11 @@
 import router from '@/router';
 import store from '@/store';
 
+import { asyncRoutes } from '@/router/config';
+import { Permission } from '@/types';
+import { RouteConfig } from 'vue-router';
+
 router.beforeEach((to, from, next) => {
-  console.log('我进守卫了');
   if (to.path === '/user/login') {
     next({ path: '/' });
   } else {
@@ -12,7 +15,8 @@ router.beforeEach((to, from, next) => {
       store
         .dispatch('permissions')
         .then((res) => {
-          console.log('路由权限', res);
+          router.addRoutes(filterAsyncRouters(asyncRoutes, res));
+          next();
           // const permissions = res && res.permissions;
           // generate dynamic router
           // store.dispatch('GenerateRoutes', permissions).then(() => {
@@ -41,3 +45,48 @@ router.beforeEach((to, from, next) => {
     }
   }
 });
+
+/**
+ * 筛选动态路由
+ *
+ * @param routers 动态路由配置
+ * @param permissions 权限实体数组
+ * @returns 筛选后的路由配置数组
+ */
+function filterAsyncRouters(
+  routers: RouteConfig[],
+  permissions: Permission[]
+): RouteConfig[] {
+  const result: RouteConfig[] = [];
+  routers.forEach((route) => {
+    const newRoute = Object.assign({}, route);
+    if (hasPermission(newRoute, permissions)) {
+      result.push(newRoute);
+      if (newRoute.children && newRoute.children.length) {
+        newRoute.children = filterAsyncRouters(newRoute.children, permissions);
+      }
+    }
+  });
+  return result;
+}
+
+/**
+ * 判断是否拥有路由权限
+ *
+ * @param route 路由实体
+ * @param permissions 权限实体数组
+ * @returns boolean 是否拥有权限 true 是, false 否
+ */
+function hasPermission(route: RouteConfig, permissions: Permission[]): boolean {
+  let flag = true;
+  if (route.meta && route.meta.permissions) {
+    flag = false;
+    for (const permission of permissions) {
+      if (route.meta.permissions.includes(permission.code)) {
+        flag = true;
+        break;
+      }
+    }
+  }
+  return flag;
+}
